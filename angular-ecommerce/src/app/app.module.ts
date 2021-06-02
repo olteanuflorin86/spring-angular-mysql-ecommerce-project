@@ -5,6 +5,8 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { Routes, RouterModule } from '@angular/router';
 
+import { ReactiveFormsModule } from '@angular/forms';
+
 import { AppComponent } from './app.component';
 import { ProductListComponent } from './components/product-list/product-list.component';
 import { ProductService } from './services/product.service';
@@ -14,9 +16,11 @@ import { ProductDetailsComponent } from './components/product-details/product-de
 import { CartStatusComponent } from './components/cart-status/cart-status.component';
 import { CartService } from './services/cart.service';
 import { CartDetailsComponent } from './components/cart-details/cart-details.component';
+import { CheckoutComponent } from './components/checkout/checkout.component';
 
 
 const routes: Routes = [
+  {path: 'checkout', component: CheckoutComponent},
   {path: 'cart-details', component: CartDetailsComponent},
   {path: 'products/:id', component: ProductDetailsComponent},
   {path: 'search/:keyword', component: ProductListComponent},
@@ -36,13 +40,15 @@ const routes: Routes = [
     SearchComponent,
     ProductDetailsComponent,
     CartStatusComponent,
-    CartDetailsComponent
+    CartDetailsComponent,
+    CheckoutComponent
   ],
   imports: [
     RouterModule.forRoot(routes),
     BrowserModule,
     HttpClientModule,
-    NgbModule
+    NgbModule,
+    ReactiveFormsModule
   ],
   providers: [ProductService, CartService],
   bootstrap: [AppComponent]
