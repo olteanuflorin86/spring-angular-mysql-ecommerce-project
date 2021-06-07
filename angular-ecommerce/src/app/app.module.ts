@@ -2,21 +2,22 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-
 import { Routes, RouterModule } from '@angular/router';
-
 import { ReactiveFormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
+
 import { ProductListComponent } from './components/product-list/product-list.component';
-import { ProductService } from './services/product.service';
 import { ProductCategoryMenuComponent } from './components/product-category-menu/product-category-menu.component';
 import { SearchComponent } from './components/search/search.component';
 import { ProductDetailsComponent } from './components/product-details/product-details.component';
 import { CartStatusComponent } from './components/cart-status/cart-status.component';
-import { CartService } from './services/cart.service';
 import { CartDetailsComponent } from './components/cart-details/cart-details.component';
 import { CheckoutComponent } from './components/checkout/checkout.component';
+
+import { ProductService } from './services/product.service';
+import { CartService } from './services/cart.service';
+import { Luv2ShopFormService } from './services/luv2-shop-form.service';
 
 
 const routes: Routes = [
@@ -50,7 +51,7 @@ const routes: Routes = [
     NgbModule,
     ReactiveFormsModule
   ],
-  providers: [ProductService, CartService],
+  providers: [ProductService, CartService, Luv2ShopFormService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
