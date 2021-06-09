@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { CartItem } from '../common/cart-item';
 
 @Injectable({
@@ -11,6 +11,9 @@ export class CartService {
 
   totalPrice: Subject<number> = new Subject<number>();
   totalQuantity: Subject<number> = new Subject<number>();
+
+  totalPriceCheckout: Subject<number> = new BehaviorSubject<number>(0);
+  totalQuantityCheckout: Subject<number> = new BehaviorSubject<number>(0);  
 
   constructor() { }
 
@@ -92,6 +95,10 @@ export class CartService {
     // publish the new values .. all subscribers will receive the new data
     this.totalPrice.next(totalPriceValue);
     this.totalQuantity.next(totalQuantityValue);
+
+    // publish the new values for checkout .. all subscribers will receive the new data
+    this.totalPriceCheckout.next(totalPriceValue);
+    this.totalQuantityCheckout.next(totalQuantityValue);
 
     // log cart data just for debugging purposes
     this.logCartData(totalPriceValue, totalQuantityValue);

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Country } from 'src/app/common/country';
 import { State } from 'src/app/common/state';
+import { CartService } from 'src/app/services/cart.service';
 import { Luv2ShopFormService } from 'src/app/services/luv2-shop-form.service';
 import { Luv2ShopValidators } from 'src/app/validators/luv2-shop-validators';
 
@@ -14,7 +15,7 @@ export class CheckoutComponent implements OnInit {
 
   checkoutFormGroup: FormGroup;
 
-  totalPrice: number = 0;
+  totalPrice: number = 0.00;
   totalQuantity: number = 0;
 
   creditCardYears: number[] = [];
@@ -25,7 +26,7 @@ export class CheckoutComponent implements OnInit {
   shippingAddressStates: State[] = [];
   billingAddressStates: State[] = [];
 
-  constructor(private formBuilder: FormBuilder, private luv2ShopFormService: Luv2ShopFormService) { }
+  constructor(private formBuilder: FormBuilder, private luv2ShopFormService: Luv2ShopFormService, private cartService: CartService) { }
 
 
   ngOnInit(): void {
@@ -112,6 +113,8 @@ export class CheckoutComponent implements OnInit {
         this.countries = data;
       }
     );
+
+    this.reviewCartDetails();    
 
   }
 
@@ -278,5 +281,22 @@ export class CheckoutComponent implements OnInit {
     )
 
   }
+
+  reviewCartDetails() {
+
+    console.log('reviewCartDetails');
+
+    // subscribe to the cart status totalPrice
+    this.cartService.totalPriceCheckout.subscribe(
+      data => this.totalPrice = data
+    )
+
+    // subscribe to the cart status totalQuantity
+    this.cartService.totalQuantityCheckout.subscribe(
+      data => this.totalQuantity = data
+    )
+
+  }
+
 
 }
