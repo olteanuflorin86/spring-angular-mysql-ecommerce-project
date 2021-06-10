@@ -1,8 +1,14 @@
+import { ThrowStmt } from '@angular/compiler';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Country } from 'src/app/common/country';
+import { Order } from 'src/app/common/order';
+import { OrderItem } from 'src/app/common/order-item';
+import { Purchase } from 'src/app/common/purchase';
 import { State } from 'src/app/common/state';
 import { CartService } from 'src/app/services/cart.service';
+import { CheckoutService } from 'src/app/services/checkout.service';
 import { Luv2ShopFormService } from 'src/app/services/luv2-shop-form.service';
 import { Luv2ShopValidators } from 'src/app/validators/luv2-shop-validators';
 
@@ -26,7 +32,11 @@ export class CheckoutComponent implements OnInit {
   shippingAddressStates: State[] = [];
   billingAddressStates: State[] = [];
 
-  constructor(private formBuilder: FormBuilder, private luv2ShopFormService: Luv2ShopFormService, private cartService: CartService) { }
+  constructor(private formBuilder: FormBuilder, 
+              private luv2ShopFormService: Luv2ShopFormService, 
+              private cartService: CartService,
+              private checkoutService: CheckoutService,
+              private router: Router) { }
 
 
   ngOnInit(): void {
@@ -204,6 +214,8 @@ export class CheckoutComponent implements OnInit {
     // (Touching all fields triggers the display of the errors messages)
     if (this.checkoutFormGroup.invalid) {
       this.checkoutFormGroup.markAllAsTouched();
+      // After we don't execute something else, we're done processing:
+      return;
     }
     console.log("CheckoutFormGroup is valid: " + this.checkoutFormGroup.valid);
 
@@ -222,6 +234,80 @@ export class CheckoutComponent implements OnInit {
     console.log("The shipping address state name is: " + this.checkoutFormGroup.get('billingAddress').value.state.name);
 
 
+    // We take care of the checkout and the purchase part:
+    
+    // set up order
+    let order: Order = new Order();
+    order.totalPrice = this.totalPrice;
+    order.totalQuantity = this.totalQuantity;
+
+    // get cart items
+    const cartItems = this.cartService.cartItems;
+
+    // create orderItems from cartItems
+      // long way
+    // let orderItems: OrderItem[] = [];
+    // for(let i=0; i < cartItems.length; i++) {
+    //   orderItems[i] = new OrderItem(cartItems[i]);
+    // }   
+      // short way - with map
+    let orderItems: OrderItem[] = cartItems.map(tempCartItem =>
+                      new OrderItem(tempCartItem)  
+    );
+
+    // set up purchase
+    let purchase = new Purchase();
+
+    // populate purchase - customer
+    purchase.customer = this.checkoutFormGroup.controls['customer'].value;
+
+    // populate purchase - shipping address
+    purchase.shippingAddress = this.checkoutFormGroup.controls['shippingAddress'].value;
+    const shippingState: State = JSON.parse(JSON.stringify(purchase.shippingAddress.state));
+    const shippingCountry: Country = JSON.parse(JSON.stringify(purchase.shippingAddress.country));
+    purchase.shippingAddress.state = shippingState.name;
+    purchase.shippingAddress.country = shippingCountry.name; 
+
+    // populate purchase - billing address
+    purchase.billingAddress = this.checkoutFormGroup.controls['billingAddress'].value;
+    const billingState: State = JSON.parse(JSON.stringify(purchase.billingAddress.state));
+    const billingCountry: Country = JSON.parse(JSON.stringify(purchase.billingAddress.country));
+    purchase.billingAddress.state = billingState.name;
+    purchase.billingAddress.country = billingCountry.name; 
+
+    // populate purchase - order and orderItems   
+    purchase.order = order;
+    purchase.orderItems = orderItems;
+
+    // call REST API via CheckoutService
+    this.checkoutService.placeOrder(purchase).subscribe({
+      next: response => {
+        alert(`Your order has been received.\nOrder tracking number: ${response.orderTrackingNumber}`);
+
+        // reset cart
+        this.resetCart();
+        
+      },
+      // this time we also do error handling:
+      error: err => {
+        alert(`Thare was an error: ${err.message}`)
+      }
+    });
+
+  }
+  resetCart() {    
+    // reset cart data
+    this.cartService.cartItems = [];
+      // we make use of the Subject... we send 0 to all subscribers to reset themselves
+    this.cartService.totalPrice.next(0);
+    this.cartService.totalQuantity.next(0);
+
+    // reset the form
+    this.checkoutFormGroup.reset();
+
+    // navigate back to the main products page
+      // this is why we injected Router in our constructor...
+    this.router.navigateByUrl("/products");
   }
 
   
